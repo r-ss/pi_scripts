@@ -7,7 +7,6 @@ import xml.etree.ElementTree as etree
 from urllib2 import urlopen
 
 
-
 def say(text):
 	FNULL = open(os.devnull, 'w')
 	subprocess.Popen(['mplayer', 'http://translate.google.com/translate_tts?tl=ru&ie=UTF-8&q=%s' % text], stdout=FNULL, stderr=subprocess.STDOUT) # call subprocess
@@ -15,6 +14,8 @@ def say(text):
 
 
 #say('привет')
+
+print u'привет'
 
 
 def get_weather():
@@ -26,13 +27,21 @@ def get_weather():
 	root = etree.parse(urlopen(weather_url)).getroot()	 
 	# find current weather
 	temperature_now = root.find(ns('fact')).findtext(ns('temperature'))
-	temperature_short = root.find(ns('fact')).findtext(ns('weather_type_short'))
+	weather_type = root.find(ns('fact')).findtext(ns('weather_type'))
 
-	print u'Погода сейчас: %s, %s' % (temperature_now, temperature_short)
+	print u'Погода сейчас: %s, %s' % (temperature_now, weather_type)
 
-
-
+	nodes = root.find(ns('day')).findall(ns('day_part'))
+	if nodes[1].attrib['type'] == 'day':
+		temperature_evening = nodes[2].find(ns('temperature-data')).findtext(ns('avg'))
+		weather_type = nodes[2].findtext(ns('weather_type'))
+		print u'Днем: %s, %s' % (temperature_evening, weather_type)
+	if nodes[2].attrib['type'] == 'evening':
+		temperature_evening = nodes[2].find(ns('temperature-data')).findtext(ns('avg'))
+		weather_type = nodes[2].findtext(ns('weather_type'))
+		print u'Вечером: %s, %s' % (temperature_evening, weather_type)
 
 
 if __name__ == '__main__':
-    get_weather()
+	get_weather()
+	print 'ok'
